@@ -20,9 +20,10 @@ package com.irenical.brick;
 import java.text.Format;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.Map;
 import java.util.Set;
 
-public abstract interface BundleInterface<KEY_CLASS>
+public abstract interface BundleInterface<KEY_CLASS> extends Map<KEY_CLASS, Object>
 {
   public abstract <RETURNS> RETURNS coallesce(KEY_CLASS[] paramArrayOfKEY_CLASS);
 

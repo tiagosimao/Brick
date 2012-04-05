@@ -19,13 +19,16 @@ package com.irenical.brick;
 
 import java.text.Format;
 import java.text.ParseException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public abstract class AbstractBundle<KEY_CLASS> implements BundleInterface<KEY_CLASS> {
-	
+
 	private static final String convertToString(Object from) {
 		return (((from instanceof String) || (from == null)) ? (String) from : from.toString());
 	}
@@ -215,6 +218,99 @@ public abstract class AbstractBundle<KEY_CLASS> implements BundleInterface<KEY_C
 			result = (List<BUNDLE_TYPE>) Collections.singletonList(createBundle(value));
 		}
 		return result;
+	}
+
+	@Override
+	public boolean equals(Object object) {
+		boolean result = object instanceof BundleInterface<?>;
+		if (result) {
+			BundleInterface<?> bundle = (BundleInterface<?>) object;
+			Set<KEY_CLASS> keys = getKeys();
+			Set<?> targetKeys = bundle.getKeys();
+			if ((keys == null && targetKeys == null) || (keys != null && keys.equals(targetKeys))) {
+				@SuppressWarnings("unchecked")
+				BundleInterface<KEY_CLASS> targetBundle = (BundleInterface<KEY_CLASS>) bundle;
+				for (KEY_CLASS key : getKeys()) {
+					Object value = getObject(key);
+					Object targetValue = targetBundle.getObject(key);
+					result &= (value == null && targetValue == null) || (value != null && value.equals(targetValue));
+				}
+			}
+		}
+		return result;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = 0;
+		for (KEY_CLASS key : getKeys()) {
+			result += key.hashCode();
+			Object value = getObject(key);
+			if (value != null) {
+				result += value.hashCode();
+			}
+		}
+		return result;
+	}
+	
+	@Override
+	public void clear() {
+		throw new RuntimeException("Not implemented");
+	}
+	
+	@Override
+	public boolean containsKey(Object key) {
+		return getKeys().contains(key);
+	}
+	
+	@Override
+	public boolean containsValue(Object value) {
+		throw new RuntimeException("Not implemented");
+	}
+	
+	@Override
+	public Set<java.util.Map.Entry<KEY_CLASS, Object>> entrySet() {
+		throw new RuntimeException("Not implemented");
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public Object get(Object key) {
+		return getObject((KEY_CLASS)key);
+	}
+	
+	@Override
+	public boolean isEmpty() {
+		return getKeys().isEmpty();
+	}
+	
+	@Override
+	public Set<KEY_CLASS> keySet() {
+		return getKeys();
+	}
+	
+	public Object put(KEY_CLASS paramK, Object paramV) {
+		throw new RuntimeException("Not implemented");
+	}
+	
+	@Override
+	public void putAll(Map<? extends KEY_CLASS, ? extends Object> paramMap) {
+		throw new RuntimeException("Not implemented");		
+	}
+	
+	@Override
+	public Object remove(Object paramObject) {
+		throw new RuntimeException("Not implemented");
+	}
+	
+	@Override
+	public int size() {
+		return getKeys().size();
+	}
+	
+	@Override
+	public Collection<Object> values() {
+		throw new RuntimeException("Not implemented");
 	}
 
 	protected abstract BundleInterface<KEY_CLASS> createBundle(Object paramObject);
