@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.irenical</groupId>
 	<artifactId>brick</artifactId>
-	<version>1.0</version>
+	<version>0.0.3</version>
 	<name>Generic Tree-structured Data Type</name>
 	<packaging>jar</packaging>
 

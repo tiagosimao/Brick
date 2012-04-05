@@ -72,7 +72,11 @@ public class JSONBundle extends AbstractBundle<String> {
 	
 	@Override
 	public Object getObject(String key) {
-		return json.opt(key);
+		Object result = json.opt(key);
+		if(result instanceof JSONObject){
+			result = new JSONBundle((JSONObject)result);
+		}
+		return result;
 	}
 	
 	@Override
