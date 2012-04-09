@@ -17,9 +17,6 @@
 
 package com.irenical.brick.collection;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,22 +29,18 @@ public class MapBundle<KEY_CLASS> extends AbstractBundle<KEY_CLASS> {
 		this.data = data;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public Object getObject(KEY_CLASS key) {
-		return this.data.get(key);
-	}
-
-	@Override
-	public Iterable<Object> getObjects(KEY_CLASS key) {
-		List<Object> result = new LinkedList<Object>();
+		Iterable<Object> resultSeveral = null;
+		Object resultOne = null;
 		Object got = this.data.get(key);
-		if (got instanceof Iterable<?>) {
-			Iterator<?> it = ((Iterable<?>) got).iterator();
-			while (it.hasNext()) {
-				result.add(it.next());
-			}
+		if(got instanceof Iterable<?>){
+			resultSeveral = (Iterable<Object>) got;
+		} else if (got != null){
+			resultOne = got;
 		}
-		return result;
+		return resultSeveral == null ? resultOne : resultSeveral;
 	}
 
 	@Override
@@ -55,10 +48,4 @@ public class MapBundle<KEY_CLASS> extends AbstractBundle<KEY_CLASS> {
 		return this.data.keySet();
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	protected AbstractBundle<KEY_CLASS> createBundle(Object value) {
-		return ((value instanceof Map<?,?>) ? new MapBundle<KEY_CLASS>((Map<KEY_CLASS,?>) value) : null);
-	}
-	
 }

@@ -231,24 +231,32 @@ public abstract class AbstractBundle<KEY_CLASS> implements BundleInterface<KEY_C
 
 	@SuppressWarnings("unchecked")
 	@Override
+	public final Iterable<Object> getObjects(KEY_CLASS key) {
+		Iterable<Object> result = null;
+		Object got = getObject(key);
+		if (got instanceof Iterable<?>) {
+			result = (Iterable<Object>) got;
+		} else if (got != null) {
+			result = Collections.singletonList(got);
+		}
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
 	public <BUNDLE_TYPE extends BundleInterface<KEY_CLASS>> BUNDLE_TYPE getBundle(KEY_CLASS key) {
-		return (BUNDLE_TYPE) createBundle(getObject(key));
+		return (BUNDLE_TYPE) getObject(key);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <BUNDLE_TYPE extends BundleInterface<KEY_CLASS>> Iterable<BUNDLE_TYPE> getBundles(KEY_CLASS key) {
-		List<BUNDLE_TYPE> result = null;
 		Object value = getObject(key);
 		if (value instanceof Iterable) {
-			result = new LinkedList<BUNDLE_TYPE>();
-			for (Object each : ((Iterable<?>) value)) {
-				result.add((BUNDLE_TYPE) createBundle(each));
-			}
+			return (Iterable<BUNDLE_TYPE>) value;
 		} else {
-			result = (List<BUNDLE_TYPE>) Collections.singletonList(createBundle(value));
+			return Collections.singletonList((BUNDLE_TYPE) value);
 		}
-		return result;
 	}
 
 	@Override
@@ -347,7 +355,5 @@ public abstract class AbstractBundle<KEY_CLASS> implements BundleInterface<KEY_C
 	public Collection<Object> values() {
 		throw new RuntimeException("Not implemented");
 	}
-
-	protected abstract BundleInterface<KEY_CLASS> createBundle(Object paramObject);
 
 }

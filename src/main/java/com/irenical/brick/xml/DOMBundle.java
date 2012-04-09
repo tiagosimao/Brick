@@ -19,8 +19,7 @@ package com.irenical.brick.xml;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,13 +27,20 @@ import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.SAXException;
 
 import com.irenical.brick.AbstractBundle;
-import com.irenical.brick.BundleInterface;
 
 public class DOMBundle extends AbstractBundle<String> {
 
@@ -47,14 +53,6 @@ public class DOMBundle extends AbstractBundle<String> {
 
 	public DOMBundle(Node node) {
 		this.node = node;
-	}
-
-	@Override
-	protected BundleInterface<String> createBundle(Object value) {
-		if (value instanceof Node) {
-			return new DOMBundle((Node) value);
-		}
-		return null;
 	}
 
 	@Override
@@ -72,45 +70,74 @@ public class DOMBundle extends AbstractBundle<String> {
 
 	@Override
 	public Object getObject(String key) {
+		List<Object> resultSeveral = null;
+		Object resultOne = null;
+		int found = 0;
 		NodeList children = node.getChildNodes();
 		for (int i = 0; i < children.getLength(); ++i) {
 			Node child = children.item(i);
 			if (key.equals(child.getNodeName())) {
-				return findValue(child);
+				Object got = findValue(child);
+				if (got instanceof Node) {
+					got = new DOMBundle((Node)got);
+				}
+				if(found==0){
+					resultOne = got;
+				} else if(found == 1 ){
+					resultSeveral = new LinkedList<Object>();
+					resultSeveral.add(resultOne);
+					resultSeveral.add(got);
+				} else {
+					resultSeveral.add(got);
+				}
+				++found;
 			}
 		}
-		return null;
+		return resultSeveral != null ? resultSeveral : resultOne;
 	}
 
-	@Override
-	public Iterable<Object> getObjects(String key) {
-		List<Object> result = new LinkedList<Object>();
-		NodeList children = node.getChildNodes();
-		for (int i = 0; i < children.getLength(); ++i) {
-			Node child = children.item(i);
-			if (key.equals(child.getNodeName())) {
-				result.add(findValue(child));
-			}
-		}
-		return result;
-	}
-
-	private static String findValue(Node node) {
-		String result = null;
-		if(node!=null&&Node.ELEMENT_NODE==node.getNodeType()){
-			node = node.getFirstChild();
-		}
+	private static Object findValue(Node node) {
+		Object result = null;
 		if (node != null) {
-			switch (node.getNodeType()) {
-			case Node.CDATA_SECTION_NODE:
-				result = node.getNodeValue();
-				break;
-			case Node.TEXT_NODE:
-				result = node.getNodeValue();
-				break;
+			if (Node.ELEMENT_NODE == node.getNodeType()) {
+				NodeList children = node.getChildNodes();
+				if (children != null) {
+					if (children.getLength() > 1) {
+						result = node;
+					} else if (children.getLength() == 1) {
+						node = children.item(0);
+					} else {
+						node = null;
+					}
+				}
+			}
+			if (result == null && node != null) {
+				if (Node.TEXT_NODE == node.getNodeType() || Node.CDATA_SECTION_NODE == node.getNodeType()) {
+					result = node.getNodeValue();
+				}
 			}
 		}
 		return result;
+	}
+	
+	@Override
+	public String toString() {
+		String result = null;
+		try{
+			TransformerFactory transFactory = TransformerFactory.newInstance();
+			Transformer transformer = transFactory.newTransformer();
+			StringWriter buffer = new StringWriter();
+			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+			transformer.transform(new DOMSource(node),new StreamResult(buffer));
+			result = buffer.toString();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return result;
+//		Document document = (node instanceof Document) ? ((Document)node) : node.getOwnerDocument();
+//		DOMImplementationLS domImplLS = (DOMImplementationLS) document.getImplementation();
+//		LSSerializer serializer = domImplLS.createLSSerializer();
+//		return serializer.writeToString(node);
 	}
 
 }

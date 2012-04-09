@@ -28,7 +28,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.irenical.brick.AbstractBundle;
-import com.irenical.brick.BundleInterface;
 
 public class JSONBundle extends AbstractBundle<String> {
 
@@ -43,41 +42,15 @@ public class JSONBundle extends AbstractBundle<String> {
 	}
 
 	@Override
-	protected BundleInterface<String> createBundle(Object value) {
-		return value instanceof JSONBundle ? ((JSONBundle) value) : null;
-	}
-
-	@Override
 	public Set<String> getKeys() {
 		String[] names = JSONObject.getNames(json);
 		return names == null ? null : new HashSet<String>(Arrays.asList(names));
 	}
 
-	@Override
-	public Iterable<Object> getObjects(String key) {
-		List<Object> result = new LinkedList<Object>();
-		try {
-			JSONArray array = json.optJSONArray(key);
-			if (array != null) {
-				for (int i = 0; i < array.length(); ++i) {
-					result.add(innerGet(array.opt(i)));
-				}
-			} else {
-				JSONObject element = json.optJSONObject(key);
-				if (element != null) {
-					result.add(innerGet(element));
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return result;
-	}
-	
-	private Object innerGet(Object value){
-		if( value instanceof JSONObject ){
-			return new JSONBundle((JSONObject)value);
-		} else if( value instanceof JSONBundle){
+	private Object innerGet(Object value) {
+		if (value instanceof JSONObject) {
+			return new JSONBundle((JSONObject) value);
+		} else if (value instanceof JSONBundle) {
 			return (JSONBundle) value;
 		}
 		return value;
@@ -85,11 +58,26 @@ public class JSONBundle extends AbstractBundle<String> {
 
 	@Override
 	public Object getObject(String key) {
-		Object result = json.opt(key);
-		if (result instanceof JSONObject) {
-			result = new JSONBundle((JSONObject) result);
+		List<Object> resultSeveral = null;
+		Object resultOne = null;
+		JSONArray array = json.optJSONArray(key);
+		if (array != null) {
+			for (int i = 0; i < array.length(); ++i) {
+				Object item = innerGet(array.opt(i));
+				if (i == 0) {
+					resultOne = item;
+				} else if (i == 1) {
+					resultSeveral = new LinkedList<Object>();
+					resultSeveral.add(resultOne);
+					resultSeveral.add(item);
+				} else {
+					resultSeveral.add(item);
+				}
+			}
+		} else {
+			resultOne = innerGet(json.opt(key));
 		}
-		return result;
+		return resultSeveral != null ? resultSeveral : resultOne;
 	}
 
 	@Override
