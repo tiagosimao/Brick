@@ -17,6 +17,7 @@
 
 package com.irenical.brick.xml;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -38,7 +39,8 @@ public class DOMBundle extends AbstractBundle<String> {
 	private final Node node;
 
 	public DOMBundle(String xml) throws IOException, ParserConfigurationException, SAXException {
-		node = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(xml);
+		ByteArrayInputStream is = new ByteArrayInputStream(xml.getBytes());
+		node = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(is);
 	}
 
 	public DOMBundle(Node node) {
