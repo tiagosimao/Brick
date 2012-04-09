@@ -19,6 +19,8 @@ package com.irenical.brick.xml;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;

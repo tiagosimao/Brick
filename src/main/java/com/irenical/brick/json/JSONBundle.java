@@ -34,34 +34,38 @@ public class JSONBundle extends AbstractBundle<String> {
 
 	private final JSONObject json;
 
-	
 	public JSONBundle(String value) throws JSONException {
 		this(new JSONObject(value));
 	}
-	
+
 	public JSONBundle(JSONObject value) {
 		this.json = value;
 	}
 
 	@Override
 	protected BundleInterface<String> createBundle(Object value) {
-		return value instanceof JSONObject ? new JSONBundle((JSONObject) value) : null;
+		return value instanceof JSONBundle ? ((JSONBundle) value) : null;
 	}
-	
+
 	@Override
 	public Set<String> getKeys() {
-		String [] names = JSONObject.getNames(json);
+		String[] names = JSONObject.getNames(json);
 		return names == null ? null : new HashSet<String>(Arrays.asList(names));
 	}
-	
+
 	@Override
 	public Iterable<Object> getObjects(String key) {
 		List<Object> result = new LinkedList<Object>();
-		try{
+		try {
 			JSONArray array = json.optJSONArray(key);
-			if(array!=null){
-				for(int i=0;i<array.length();++i){
-					result.add(array.opt(i));
+			if (array != null) {
+				for (int i = 0; i < array.length(); ++i) {
+					result.add(innerGet(array.opt(i)));
+				}
+			} else {
+				JSONObject element = json.optJSONObject(key);
+				if (element != null) {
+					result.add(innerGet(element));
 				}
 			}
 		} catch (Exception e) {
@@ -70,15 +74,24 @@ public class JSONBundle extends AbstractBundle<String> {
 		return result;
 	}
 	
+	private Object innerGet(Object value){
+		if( value instanceof JSONObject ){
+			return new JSONBundle((JSONObject)value);
+		} else if( value instanceof JSONBundle){
+			return (JSONBundle) value;
+		}
+		return value;
+	}
+
 	@Override
 	public Object getObject(String key) {
 		Object result = json.opt(key);
-		if(result instanceof JSONObject){
-			result = new JSONBundle((JSONObject)result);
+		if (result instanceof JSONObject) {
+			result = new JSONBundle((JSONObject) result);
 		}
 		return result;
 	}
-	
+
 	@Override
 	public String toString() {
 		return json.toString();

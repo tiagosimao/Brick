@@ -22,6 +22,7 @@ import java.text.ParseException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -34,23 +35,23 @@ public abstract class AbstractBundle<KEY_CLASS> implements BundleInterface<KEY_C
 	}
 
 	private static final Number convertToNumber(Object from) {
-		return (((from instanceof Number) || (from == null)) ? (Number) from : Double.valueOf(Double.parseDouble(from.toString())));
+		return (((from instanceof Number) || (from == null)) ? (Number) from : Double.valueOf(from.toString()));
 	}
 
 	private static final Double convertToDouble(Object from) {
-		return Double.valueOf(((from instanceof Double) || (from == null)) ? ((Double) from).doubleValue() : Double.parseDouble(from.toString()));
+		return ((from instanceof Double) || (from == null)) ? ((Double) from) : Double.valueOf(from.toString());
 	}
 
 	private static final Long convertToLong(Object from) {
-		return Long.valueOf(((from instanceof Long) || (from == null)) ? ((Long) from).longValue() : Long.parseLong(from.toString()));
+		return ((from instanceof Long) || (from == null)) ? ((Long) from) : Long.valueOf(from.toString());
 	}
 
 	private static final Float convertToFloat(Object from) {
-		return Float.valueOf(((from instanceof Float) || (from == null)) ? ((Float) from).floatValue() : Float.parseFloat(from.toString()));
+		return ((from instanceof Float) || (from == null)) ? ((Float) from) : Float.valueOf(from.toString());
 	}
 
 	private static final Integer convertToInteger(Object from) {
-		return Integer.valueOf(((from instanceof Integer) || (from == null)) ? ((Integer) from).intValue() : Integer.parseInt(from.toString()));
+		return ((from instanceof Integer) || (from == null)) ? ((Integer) from) : Integer.valueOf(from.toString());
 	}
 
 	private static final Date convertToDate(Object from) {
@@ -67,6 +68,36 @@ public abstract class AbstractBundle<KEY_CLASS> implements BundleInterface<KEY_C
 			}
 		}
 		return null;
+	}
+
+	private class AbstractBundleEntry implements Map.Entry<KEY_CLASS, Object> {
+
+		private final KEY_CLASS key;
+
+		private Object value;
+
+		AbstractBundleEntry(KEY_CLASS key, Object value) {
+			this.key = key;
+			this.value = value;
+		}
+
+		@Override
+		public KEY_CLASS getKey() {
+			return key;
+		}
+
+		@Override
+		public Object getValue() {
+			return value;
+		}
+
+		@Override
+		public Object setValue(Object value) {
+			Object result = this.value;
+			this.value = value;
+			return result;
+		}
+
 	}
 
 	@SuppressWarnings("unchecked")
@@ -252,62 +283,66 @@ public abstract class AbstractBundle<KEY_CLASS> implements BundleInterface<KEY_C
 		}
 		return result;
 	}
-	
+
 	@Override
 	public void clear() {
 		throw new RuntimeException("Not implemented");
 	}
-	
+
 	@Override
 	public boolean containsKey(Object key) {
 		return getKeys().contains(key);
 	}
-	
+
 	@Override
 	public boolean containsValue(Object value) {
 		throw new RuntimeException("Not implemented");
 	}
-	
+
 	@Override
-	public Set<java.util.Map.Entry<KEY_CLASS, Object>> entrySet() {
-		throw new RuntimeException("Not implemented");
+	public Set<Map.Entry<KEY_CLASS, Object>> entrySet() {
+		Set<Map.Entry<KEY_CLASS, Object>> result = new HashSet<Map.Entry<KEY_CLASS, Object>>();
+		for (KEY_CLASS key : getKeys()) {
+			result.add(new AbstractBundleEntry(key, getObject(key)));
+		}
+		return result;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public Object get(Object key) {
-		return getObject((KEY_CLASS)key);
+		return getObject((KEY_CLASS) key);
 	}
-	
+
 	@Override
 	public boolean isEmpty() {
 		return getKeys().isEmpty();
 	}
-	
+
 	@Override
 	public Set<KEY_CLASS> keySet() {
 		return getKeys();
 	}
-	
+
 	public Object put(KEY_CLASS paramK, Object paramV) {
 		throw new RuntimeException("Not implemented");
 	}
-	
+
 	@Override
 	public void putAll(Map<? extends KEY_CLASS, ? extends Object> paramMap) {
-		throw new RuntimeException("Not implemented");		
+		throw new RuntimeException("Not implemented");
 	}
-	
+
 	@Override
 	public Object remove(Object paramObject) {
 		throw new RuntimeException("Not implemented");
 	}
-	
+
 	@Override
 	public int size() {
 		return getKeys().size();
 	}
-	
+
 	@Override
 	public Collection<Object> values() {
 		throw new RuntimeException("Not implemented");
