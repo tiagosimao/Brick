@@ -28,23 +28,35 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.irenical.brick.AbstractBundle;
+import com.irenical.brick.BundleInterface;
 
 public class JSONBundle extends AbstractBundle<String> {
 
 	private final JSONObject json;
 
+	public JSONBundle(BundleInterface<String> wrapped) {
+		super(wrapped);
+		this.json = null;
+	}
+
 	public JSONBundle(String value) throws JSONException {
-		this(new JSONObject(value));
+		super(null);
+		this.json = new JSONObject(value);
 	}
 
 	public JSONBundle(JSONObject value) {
+		super(null);
 		this.json = value;
 	}
 
 	@Override
 	public Set<String> getKeys() {
-		String[] names = JSONObject.getNames(json);
-		return names == null ? null : new HashSet<String>(Arrays.asList(names));
+		if (json != null) {
+			String[] names = JSONObject.getNames(json);
+			return names == null ? null : new HashSet<String>(Arrays.asList(names));
+		} else {
+			return super.getKeys();
+		}
 	}
 
 	private Object innerGet(Object value) {
@@ -58,31 +70,41 @@ public class JSONBundle extends AbstractBundle<String> {
 
 	@Override
 	public Object getObject(String key) {
-		List<Object> resultSeveral = null;
-		Object resultOne = null;
-		JSONArray array = json.optJSONArray(key);
-		if (array != null) {
-			for (int i = 0; i < array.length(); ++i) {
-				Object item = innerGet(array.opt(i));
-				if (i == 0) {
-					resultOne = item;
-				} else if (i == 1) {
-					resultSeveral = new LinkedList<Object>();
-					resultSeveral.add(resultOne);
-					resultSeveral.add(item);
-				} else {
-					resultSeveral.add(item);
+		if (json != null) {
+			List<Object> resultSeveral = null;
+			Object resultOne = null;
+			JSONArray array = json.optJSONArray(key);
+			if (array != null) {
+				for (int i = 0; i < array.length(); ++i) {
+					Object item = innerGet(array.opt(i));
+					if (i == 0) {
+						resultOne = item;
+					} else if (i == 1) {
+						resultSeveral = new LinkedList<Object>();
+						resultSeveral.add(resultOne);
+						resultSeveral.add(item);
+					} else {
+						resultSeveral.add(item);
+					}
 				}
+			} else {
+				resultOne = innerGet(json.opt(key));
 			}
+			return resultSeveral != null ? resultSeveral : resultOne;
 		} else {
-			resultOne = innerGet(json.opt(key));
+			return super.getObject(key);
 		}
-		return resultSeveral != null ? resultSeveral : resultOne;
 	}
 
 	@Override
 	public String toString() {
-		return json.toString();
+		String result = null;
+		if (json != null) {
+			json.toString();
+		} else if (wrapped != null) {
+			result = new JSONObject(wrapped).toString();
+		}
+		return result;
 	}
 
 }

@@ -33,67 +33,81 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.SAXException;
 
 import com.irenical.brick.AbstractBundle;
+import com.irenical.brick.BundleInterface;
 
 public class DOMBundle extends AbstractBundle<String> {
 
 	private final Node node;
+	
+	public DOMBundle(BundleInterface<String> wrapped){
+		super(wrapped);
+		this.node=null;
+	}
 
 	public DOMBundle(String xml) throws IOException, ParserConfigurationException, SAXException {
+		super(null);
 		ByteArrayInputStream is = new ByteArrayInputStream(xml.getBytes());
 		node = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(is);
 	}
 
 	public DOMBundle(Node node) {
+		super(null);
 		this.node = node;
 	}
 
 	@Override
 	public Set<String> getKeys() {
-		Set<String> result = new HashSet<String>();
-		NodeList children = node.getChildNodes();
-		for (int i = 0; i < children.getLength(); ++i) {
-			Node child = children.item(i);
-			if (Node.ELEMENT_NODE == child.getNodeType()) {
-				result.add(child.getNodeName());
+		Set<String> result = null;
+		if(node!=null){
+			result = new HashSet<String>();
+			NodeList children = node.getChildNodes();
+			for (int i = 0; i < children.getLength(); ++i) {
+				Node child = children.item(i);
+				if (Node.ELEMENT_NODE == child.getNodeType()) {
+					result.add(child.getNodeName());
+				}
 			}
+		} else {
+			result = super.getKeys();
 		}
 		return result;
 	}
 
 	@Override
 	public Object getObject(String key) {
-		List<Object> resultSeveral = null;
-		Object resultOne = null;
-		int found = 0;
-		NodeList children = node.getChildNodes();
-		for (int i = 0; i < children.getLength(); ++i) {
-			Node child = children.item(i);
-			if (key.equals(child.getNodeName())) {
-				Object got = findValue(child);
-				if (got instanceof Node) {
-					got = new DOMBundle((Node)got);
+		if(node!=null){
+			List<Object> resultSeveral = null;
+			Object resultOne = null;
+			int found = 0;
+			NodeList children = node.getChildNodes();
+			for (int i = 0; i < children.getLength(); ++i) {
+				Node child = children.item(i);
+				if (key.equals(child.getNodeName())) {
+					Object got = findValue(child);
+					if (got instanceof Node) {
+						got = new DOMBundle((Node)got);
+					}
+					if(found==0){
+						resultOne = got;
+					} else if(found == 1 ){
+						resultSeveral = new LinkedList<Object>();
+						resultSeveral.add(resultOne);
+						resultSeveral.add(got);
+					} else {
+						resultSeveral.add(got);
+					}
+					++found;
 				}
-				if(found==0){
-					resultOne = got;
-				} else if(found == 1 ){
-					resultSeveral = new LinkedList<Object>();
-					resultSeveral.add(resultOne);
-					resultSeveral.add(got);
-				} else {
-					resultSeveral.add(got);
-				}
-				++found;
 			}
+			return resultSeveral != null ? resultSeveral : resultOne;
+		} else {
+			return super.getObject(key);
 		}
-		return resultSeveral != null ? resultSeveral : resultOne;
 	}
 
 	private static Object findValue(Node node) {
@@ -124,20 +138,29 @@ public class DOMBundle extends AbstractBundle<String> {
 	public String toString() {
 		String result = null;
 		try{
-			TransformerFactory transFactory = TransformerFactory.newInstance();
-			Transformer transformer = transFactory.newTransformer();
-			StringWriter buffer = new StringWriter();
-			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-			transformer.transform(new DOMSource(node),new StreamResult(buffer));
-			result = buffer.toString();
+			Node node = null;
+			if(this.node!=null){
+				node = this.node; 
+			} else if(wrapped!=null){
+				node = createNode(wrapped);
+			}
+			if(node!=null){
+				TransformerFactory transFactory = TransformerFactory.newInstance();
+				Transformer transformer = transFactory.newTransformer();
+				StringWriter buffer = new StringWriter();
+				transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+				transformer.transform(new DOMSource(node),new StreamResult(buffer));
+				result = buffer.toString();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return result;
-//		Document document = (node instanceof Document) ? ((Document)node) : node.getOwnerDocument();
-//		DOMImplementationLS domImplLS = (DOMImplementationLS) document.getImplementation();
-//		LSSerializer serializer = domImplLS.createLSSerializer();
-//		return serializer.writeToString(node);
+	}
+
+	private Node createNode(BundleInterface<String> wrapped) {
+		//TODO
+		return null;
 	}
 
 }

@@ -21,11 +21,19 @@ import java.util.Map;
 import java.util.Set;
 
 import com.irenical.brick.AbstractBundle;
+import com.irenical.brick.BundleInterface;
 
 public class MapBundle<KEY_CLASS> extends AbstractBundle<KEY_CLASS> {
+	
 	private final Map<KEY_CLASS, ?> data;
+	
+	public MapBundle(BundleInterface<KEY_CLASS> wrapped) {
+		super(wrapped);
+		this.data = wrapped;
+	}
 
 	public MapBundle(Map<KEY_CLASS, ?> data) {
+		super(null);
 		this.data = data;
 	}
 	

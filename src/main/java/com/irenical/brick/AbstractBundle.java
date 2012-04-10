@@ -99,7 +99,23 @@ public abstract class AbstractBundle<KEY_CLASS> implements BundleInterface<KEY_C
 		}
 
 	}
-
+	
+	protected final BundleInterface<KEY_CLASS> wrapped;
+	
+	public AbstractBundle(BundleInterface<KEY_CLASS> wrapped){
+		this.wrapped=wrapped;
+	}
+	
+	@Override
+	public Set<KEY_CLASS> getKeys() {
+		return wrapped.getKeys();
+	}
+	
+	@Override
+	public Object getObject(KEY_CLASS key) {
+		return wrapped.get(key);
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public <RETURNS> RETURNS coallesce(KEY_CLASS[] keys) {

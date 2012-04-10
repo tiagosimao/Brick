@@ -47,7 +47,6 @@ public class DOMBundleTest extends BundleTest {
 	@Test
 	public void testBundleToString(){
 		try{
-			System.out.println(bundle.toString());
 			testStringBundle(new DOMBundle(bundle.toString()));
 		} catch (Exception e) {
 			e.printStackTrace();
