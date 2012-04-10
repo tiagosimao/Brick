@@ -100,7 +100,7 @@ public class JSONBundle extends AbstractBundle<String> {
 	public String toString() {
 		String result = null;
 		if (json != null) {
-			json.toString();
+			result = json.toString();
 		} else if (wrapped != null) {
 			result = new JSONObject(wrapped).toString();
 		}

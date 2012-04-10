@@ -21,18 +21,25 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.hamcrest.core.IsInstanceOf;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -158,9 +165,64 @@ public class DOMBundle extends AbstractBundle<String> {
 		return result;
 	}
 
-	private Node createNode(BundleInterface<String> wrapped) {
-		//TODO
+	// TODO not finished
+	@SuppressWarnings("unchecked")
+	private Node createNode(BundleInterface<String> wrapped) throws ParserConfigurationException {
+		
+//		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+//		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+//		
+//		// root elements
+//		Document doc = docBuilder.newDocument();
+//
+//		for(String key : wrapped.getKeys()){			
+//			
+//			System.out.println(key);
+//			
+//			Element rootElement = doc.createElement(key);
+//			doc.appendChild(rootElement);
+//			
+//			Object object = wrapped.getObject(key);
+//			
+//			System.out.println(object.getClass());
+//			
+//			if(object instanceof BundleInterface){
+//				rootElement.appendChild(createNode((BundleInterface<String>)object));
+//			}
+//			else if(object instanceof Iterable<?>){
+//				for(Object bundle : (Iterable<?>) object){
+//					rootElement.appendChild(createNode((BundleInterface<String>) bundle));
+//				}
+//			}
+//			else if(object instanceof String){
+//				Element element = doc.createElement(key);
+//				element.setNodeValue((String) object);
+//				rootElement.appendChild(element);
+//			}
+//			
+//			this.printDoc(doc);
+//		}
+//		
+//		return doc;
+		
 		return null;
 	}
 
+	// TODO delete after createNode is complete
+	private void printDoc(Document doc){
+		try
+	    {
+	       DOMSource domSource = new DOMSource(doc);
+	       StringWriter writer = new StringWriter();
+	       StreamResult result = new StreamResult(writer);
+	       TransformerFactory tf = TransformerFactory.newInstance();
+	       Transformer transformer = tf.newTransformer();
+	       transformer.transform(domSource, result);
+	       System.out.println(writer.toString());
+	    }
+	    catch(TransformerException ex)
+	    {
+	       ex.printStackTrace();
+	    }
+	}
 }
